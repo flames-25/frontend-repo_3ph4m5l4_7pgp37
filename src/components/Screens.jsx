@@ -28,7 +28,7 @@ export function Splash({ onDone }) {
         <GlassCard className="w-full max-w-xs p-6 text-center space-y-3">
           <Logo className="justify-center" />
           <div className="text-sm text-white/70">Powered by Solana</div>
-          <div className="flex items-center justify-center gap-2 text-teal-300/80">
+          <div className="flex items-center justify-center gap-2 text-white/70">
             <Loader2 className="size-4 animate-spin" />
             <span className="text-xs">Loading</span>
           </div>
@@ -75,10 +75,10 @@ export function AccessCode({ onUnlock }) {
           </div>
           <div className="flex items-center justify-center gap-3">
             {Array.from({length:6}).map((_,i) => (
-              <div key={i} className={`w-3 h-3 rounded-full ${i < pin.length ? 'bg-teal-400' : 'bg-white/20'} shadow-[0_0_10px_2px_rgba(45,212,191,0.35)]`} />
+              <div key={i} className={`w-3 h-3 rounded-full ${i < pin.length ? 'bg-white' : 'bg-white/20'} shadow-[0_0_10px_2px_rgba(255,255,255,0.25)]`} />
             ))}
           </div>
-          {error && <div className="text-xs text-rose-400/90">{error}</div>}
+          {error && <div className="text-xs text-white/70">{error}</div>}
         </div>
         <PinPad onKey={handleKey} />
       </div>
@@ -115,7 +115,7 @@ export function ImportSeed({ onImported }) {
   const valid = phrase.trim().split(/\s+/).length >= 12
   return (
     <div className="h-full w-full p-6 flex flex-col gap-4">
-      <GlassCard className="p-3 text-xs text-amber-200/90">Never share your seed phrase</GlassCard>
+      <GlassCard className="p-3 text-xs text-white/80">Never share your seed phrase</GlassCard>
       <div className="relative">
         <textarea value={phrase} onChange={e=>setPhrase(e.target.value)}
           className="w-full h-40 resize-none bg-white/6 backdrop-blur-xl border border-white/15 rounded-xl p-4 text-white/90 outline-none"
@@ -136,7 +136,7 @@ export function ImportPK({ onImported }) {
   const valid = pk.trim().length > 10
   return (
     <div className="h-full w-full p-6 flex flex-col gap-4">
-      <GlassCard className="p-3 text-xs text-amber-200/90">Never share your private key</GlassCard>
+      <GlassCard className="p-3 text-xs text-white/80">Never share your private key</GlassCard>
       <div className="relative">
         <textarea value={pk} onChange={e=>setPk(e.target.value)}
           className="w-full h-36 resize-none bg-white/6 backdrop-blur-xl border border-white/15 rounded-xl p-4 text-white/90 outline-none"
@@ -155,7 +155,7 @@ function AssetRow({ logo, name, balance, usd }) {
   return (
     <div className="flex items-center justify-between p-3 rounded-xl bg-white/6 border border-white/10">
       <div className="flex items-center gap-3">
-        <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-teal-400/40 to-fuchsia-500/40" />
+        <div className="w-9 h-9 rounded-lg bg-white/10" />
         <div>
           <div className="text-white/90">{name}</div>
           <div className="text-xs text-white/50">{usd}</div>
@@ -167,10 +167,10 @@ function AssetRow({ logo, name, balance, usd }) {
 }
 
 function TopWalletCard({ wallet }) {
+  const [hide, setHide] = useLocalStorage('hide_balances', false)
   return (
     <div className="relative rounded-2xl overflow-hidden border border-white/10">
-      {/* Background gradients and glow */}
-      <div className="absolute inset-0 bg-[radial-gradient(120%_120%_at_-10%_-10%,rgba(45,212,191,0.22),transparent_50%),radial-gradient(120%_120%_at_110%_10%,rgba(217,70,239,0.22),transparent_55%)]" />
+      {/* Neutral glass background */}
       <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-white/5 to-white/[0.03] backdrop-blur-xl" />
 
       <div className="relative p-4">
@@ -178,37 +178,39 @@ function TopWalletCard({ wallet }) {
           <Logo />
           <div className="flex items-center gap-1.5">
             <GlassBadge className="text-[10px] px-2 py-0.5">Solana</GlassBadge>
-            <Shield className="size-4 text-teal-300" />
+            <Shield className="size-4 text-white/80" />
           </div>
         </div>
 
-        <div className="mt-3 grid grid-cols-2 gap-3">
+        {/* Align card number with Total Balance in one row */}
+        <div className="mt-3 flex items-center justify-between">
           <div>
             <div className="text-white/70 text-[10px]">{wallet.name}</div>
-            <div className="mt-0.5 text-xl font-[Goldman] tracking-wider">CHEA •••• •••• •••• 402</div>
-            <div className="mt-2 inline-flex items-center gap-1.5 text-[10px] text-white/70">
-              <span className="px-2 py-0.5 rounded-full bg-white/10 border border-white/15">Main</span>
-              <span className="px-2 py-0.5 rounded-full bg-teal-400/10 border border-teal-400/20 text-teal-200">Priority</span>
-            </div>
+            <div className="mt-0.5 text-lg font-[Goldman] tracking-wider">CHEA •••• •••• •••• 402</div>
           </div>
-          <div className="flex flex-col items-end justify-center">
+          <div className="flex flex-col items-end">
             <div className="text-[10px] text-white/60">Total Balance</div>
-            <div className="text-lg font-[Goldman]">$1,068.40</div>
+            <div className="flex items-center gap-2">
+              <div className="text-lg font-[Goldman]">{hide ? '••••••' : '$1,068.40'}</div>
+              <button onClick={()=>setHide(h=>!h)} className="text-white/70 active:scale-95">
+                {hide ? <Eye className="size-4" /> : <EyeOff className="size-4" />}
+              </button>
+            </div>
           </div>
         </div>
 
         <div className="mt-3 grid grid-cols-3 gap-2">
           <GlassCard className="p-2 text-center bg-white/5">
             <div className="text-[10px] text-white/60">SOL</div>
-            <div className="text-sm font-[Goldman]">2.84</div>
+            <div className="text-sm font-[Goldman]">{hide ? '•••' : '2.84'}</div>
           </GlassCard>
           <GlassCard className="p-2 text-center bg-white/5">
             <div className="text-[10px] text-white/60">USDC</div>
-            <div className="text-sm font-[Goldman]">128.2</div>
+            <div className="text-sm font-[Goldman]">{hide ? '•••' : '128.2'}</div>
           </GlassCard>
           <GlassCard className="p-2 text-center bg-white/5">
             <div className="text-[10px] text-white/60">CHEAP</div>
-            <div className="text-sm font-[Goldman]">42,000</div>
+            <div className="text-sm font-[Goldman]">{hide ? '•••' : '42,000'}</div>
           </GlassCard>
         </div>
 
@@ -219,7 +221,7 @@ function TopWalletCard({ wallet }) {
               <Copy className="size-3" />
             </button>
           </div>
-          <a href="https://solscan.io/" target="_blank" rel="noreferrer" className="flex items-center gap-1 text-teal-300/90">
+          <a href="https://solscan.io/" target="_blank" rel="noreferrer" className="flex items-center gap-1 text-white/80 hover:underline">
             <span>SOLSCAN</span>
             <ExternalLink className="size-3" />
           </a>
@@ -265,7 +267,7 @@ export function SendSheet({ onClose }) {
       <div className="text-white/80">Send</div>
       <input value={to} onChange={e=>setTo(e.target.value)} placeholder="Recipient address" className="w-full bg-white/6 border border-white/15 rounded-xl p-3 text-white/90 outline-none" />
       <input value={amt} onChange={e=>setAmt(e.target.value)} placeholder="Amount (SOL)" className="w-full bg-white/6 border border-white/15 rounded-xl p-3 text-white/90 outline-none" />
-      <GlassCard className="p-3 text-xs text-white/60">Network fee estimate: <span className="text-teal-300">{fee} SOL</span></GlassCard>
+      <GlassCard className="p-3 text-xs text-white/60">Network fee estimate: <span className="text-white">{fee} SOL</span></GlassCard>
       <div className="grid grid-cols-2 gap-3">
         <GlassButton onClick={onClose}>Cancel</GlassButton>
         <GlassButton onClick={onClose}>Send</GlassButton>
@@ -301,14 +303,14 @@ export function History({ onBack }) {
     <div className="h-full w-full p-5 flex flex-col gap-4">
       <div className="grid grid-cols-3 bg-white/6 border border-white/10 rounded-xl p-1">
         {tabs.map(t => (
-          <button key={t} onClick={()=>setTab(t)} className={`py-2 rounded-lg text-sm ${tab===t?'bg-white/15 ring-1 ring-inset ring-teal-300/20 text-white':'text-white/60'}`}>{t}</button>
+          <button key={t} onClick={()=>setTab(t)} className={`py-2 rounded-lg text-sm ${tab===t?'bg-white/15 ring-1 ring-inset ring-white/20 text-white':'text-white/60'}`}>{t}</button>
         ))}
       </div>
       <div className="space-y-2">
         {filtered.map((r,i)=>(
           <GlassCard key={i} className="p-3 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              {r.dir==='in'? <ArrowDownLeft className="text-teal-300" /> : <ArrowUpRight className="text-fuchsia-300" />}
+              {r.dir==='in'? <ArrowDownLeft className="text-white/80" /> : <ArrowUpRight className="text-white/80" />}
               <div>
                 <div className="text-white/90">{r.amt}</div>
                 <div className="text-xs text-white/50">{r.dir==='in'?'From':'To'} {r.addr}</div>
@@ -337,7 +339,7 @@ export function Settings({ onBack }) {
           <GlassButton onClick={()=>setHide(h=>!h)}>{hide? 'Show balances':'Hide balances'}</GlassButton>
           <GlassButton>Show QR Address</GlassButton>
           <GlassButton>Export Public Key</GlassButton>
-          <GlassButton className="text-rose-300 border-rose-300/20">Remove Wallet</GlassButton>
+          <GlassButton className="text-white border-white/30">Remove Wallet</GlassButton>
         </div>
       </GlassCard>
       <div className="mt-auto">

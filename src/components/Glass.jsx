@@ -15,7 +15,7 @@ export function GlassButton({ children, className = '', onClick, disabled }) {
       disabled={disabled}
       className={`relative w-full select-none active:scale-[0.98] transition-all duration-150 bg-white/6 hover:bg-white/10 disabled:opacity-50 disabled:hover:bg-white/6 backdrop-blur-xl border border-white/15 rounded-xl px-4 py-3 text-white/90 shadow-[0_0_0_1px_rgba(255,255,255,0.06)_inset,0_10px_20px_-10px_rgba(0,0,0,0.7)] ${className}`}
     >
-      <span className="absolute inset-0 rounded-xl ring-1 ring-inset ring-teal-400/15" />
+      <span className="absolute inset-0 rounded-xl ring-1 ring-inset ring-white/10" />
       <span className="relative z-10">{children}</span>
     </button>
   )
@@ -31,7 +31,7 @@ export function GlassBadge({ children, className = '' }) {
 
 export function GradientBg({ children }) {
   return (
-    <div className="min-h-screen w-full bg-[radial-gradient(1200px_800px_at_-200px_-200px,#111827_20%,transparent),radial-gradient(800px_600px_at_120%_10%,#1f2937_10%,transparent)]" style={{background:"linear-gradient(180deg,#050608, #101319)"}}>
+    <div className="min-h-screen w-full" style={{background:"linear-gradient(180deg,#050608,#0b0c0f)"}}>
       {children}
     </div>
   )
