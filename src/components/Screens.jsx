@@ -407,42 +407,66 @@ export function TopUp({ onClose }) {
   )
 }
 
+function NFCWaves({ label = 'Mencari perangkat terdekat...' }) {
+  return (
+    <div className="relative mx-auto mt-2 mb-1 h-40 w-40">
+      <div className="absolute inset-0 rounded-full border border-white/15" />
+      <div className="absolute inset-0 rounded-full animate-ping border border-white/20" />
+      <div className="absolute inset-2 rounded-full animate-ping border border-white/15" style={{ animationDelay: '150ms' }} />
+      <div className="absolute inset-4 rounded-full animate-ping border border-white/10" style={{ animationDelay: '300ms' }} />
+      <div className="absolute inset-1/3 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center">
+        <div className="h-3 w-3 rounded-full bg-white shadow-[0_0_20px_6px_rgba(255,255,255,0.25)]" />
+      </div>
+      <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-[11px] text-white/70 whitespace-nowrap">{label}</div>
+    </div>
+  )
+}
+
 export function NFCTransfer({ onClose }) {
   const [mode, setMode] = useState('send') // 'send' | 'receive'
   const [amt, setAmt] = useState('')
   const [addr, setAddr] = useState('')
   const [status, setStatus] = useState('')
   const [error, setError] = useState('')
+  const [scanning, setScanning] = useState(false)
   const hasNFC = typeof window !== 'undefined' && 'NDEFReader' in window
 
   async function startSend() {
-    setError(''); setStatus('')
-    if (!amt || !addr) { setError('Fill amount and address'); return }
+    setError(''); setStatus('');
+    if (!amt || !addr) { setError('Isi nominal dan alamat terlebih dulu'); return }
+    setScanning(true)
     if (!hasNFC) {
-      setStatus('Simulating NFC write...')
-      setTimeout(()=> setStatus('Payment request sent (simulated). Tap supported device to complete.'), 1200)
+      setStatus('Mencari perangkat terdekat (simulasi)...')
+      setTimeout(()=> setStatus('Tempelkan perangkat penerima untuk mengirim...'), 1000)
+      setTimeout(()=> { setStatus('Permintaan pembayaran terkirim (simulasi)'); setScanning(false) }, 2200)
       return
     }
     try {
       const ndef = new window.NDEFReader()
       await ndef.write({ records: [ { recordType:'text', data: JSON.stringify({ type:'cheappay:payment', addr, amt }) } ] })
-      setStatus('Payment request sent via NFC. Ask the receiver to tap to accept.')
+      setStatus('Permintaan pembayaran terkirim via NFC. Minta penerima untuk tap.')
     } catch (e) {
       setError(e?.message || 'NFC write failed')
+    } finally {
+      setScanning(false)
     }
   }
 
   async function startListen() {
-    setError(''); setStatus('')
+    setError(''); setStatus('');
+    setScanning(true)
     if (!hasNFC) {
-      setStatus('Simulating NFC listening...')
-      setTimeout(()=> setStatus('Received mock NFC payload. Ready to proceed.'), 1200)
+      setStatus('Mendengarkan NFC (simulasi)...')
+      setTimeout(()=> {
+        setStatus('Payload NFC contoh diterima. Siap diproses.')
+        setAmt('0.25'); setAddr('8x9...jk2'); setScanning(false)
+      }, 1600)
       return
     }
     try {
       const ndef = new window.NDEFReader()
       await ndef.scan()
-      setStatus('Listening... bring a device close to scan.')
+      setStatus('Mendengarkan... dekatkan perangkat untuk tap.')
       ndef.onreading = (event) => {
         try {
           const rec = event.message.records?.[0]
@@ -451,19 +475,22 @@ export function NFCTransfer({ onClose }) {
             const payload = JSON.parse(textDecoder.decode(rec.data))
             if (payload?.type === 'cheappay:payment') {
               setAmt(String(payload.amt || '')); setAddr(payload.addr || '');
-              setStatus('Payment request received. You can confirm in Send screen.')
+              setStatus('Permintaan pembayaran diterima. Anda bisa konfirmasi di layar Send.')
+              setScanning(false)
             } else {
-              setStatus('Unknown NFC payload received')
+              setStatus('Payload NFC tidak dikenal')
             }
           } else {
-            setStatus('Unsupported NFC record type')
+            setStatus('Tipe record NFC tidak didukung')
           }
         } catch (err) {
-          setError('Failed to parse NFC data')
+          setError('Gagal membaca data NFC')
+          setScanning(false)
         }
       }
     } catch (e) {
       setError(e?.message || 'NFC scan failed')
+      setScanning(false)
     }
   }
 
@@ -471,26 +498,33 @@ export function NFCTransfer({ onClose }) {
     <div className="p-5 space-y-3 pb-24">
       <div className="text-white/80">NFC Transfer</div>
       <GlassCard className="p-3 text-xs text-white/60">
-        Works on supported Android Chrome devices over HTTPS. If NFC is unavailable, actions will be simulated.
+        Berjalan di perangkat Android Chrome yang mendukung melalui HTTPS. Jika NFC tidak tersedia, proses akan disimulasikan.
       </GlassCard>
       <div className="grid grid-cols-2 bg-white/6 border border-white/10 rounded-xl p-1">
         {['send','receive'].map(m => (
-          <button key={m} onClick={()=>setMode(m)} className={`py-2 rounded-lg text-sm ${mode===m?'bg-white/15 ring-1 ring-inset ring-white/20 text-white':'text-white/60'}`}>{m==='send'?'Send via NFC':'Receive via NFC'}</button>
+          <button key={m} onClick={()=>setMode(m)} className={`py-2 rounded-lg text-sm ${mode===m?'bg-white/15 ring-1 ring-inset ring-white/20 text-white':'text-white/60'}`}>{m==='send'?'Kirim via NFC':'Terima via NFC'}</button>
         ))}
       </div>
+
+      {scanning && (
+        <GlassCard className="p-6 flex flex-col items-center">
+          <NFCWaves label={mode==='send' ? 'Mencari perangkat untuk mengirim...' : 'Mencari perangkat di sekitar...'} />
+          <div className="mt-10 text-[11px] text-white/60">Pastikan NFC aktif dan perangkat dalam jarak dekat</div>
+        </GlassCard>
+      )}
 
       {mode==='send' ? (
         <>
           <input value={addr} onChange={e=>setAddr(e.target.value)} placeholder="Recipient address" className="w-full bg-white/6 border border-white/15 rounded-xl p-3 text-white/90 outline-none" />
           <input value={amt} onChange={e=>setAmt(e.target.value)} placeholder="Amount (SOL)" className="w-full bg-white/6 border border-white/15 rounded-xl p-3 text-white/90 outline-none" />
-          <GlassButton onClick={startSend}>Start NFC</GlassButton>
+          <GlassButton onClick={startSend} disabled={scanning}>{scanning ? 'Menunggu...' : 'Mulai NFC'}</GlassButton>
         </>
       ) : (
         <>
-          <GlassButton onClick={startListen}>Listen for NFC</GlassButton>
-          {addr || amt ? (
+          <GlassButton onClick={startListen} disabled={scanning}>{scanning ? 'Mendengarkan...' : 'Dengarkan NFC'}</GlassButton>
+          {(addr || amt) && !scanning ? (
             <GlassCard className="p-3 text-xs text-white/70">
-              Incoming request: {amt || '—'} SOL to {addr || '—'}
+              Permintaan masuk: {amt || '—'} SOL ke {addr || '—'}
             </GlassCard>
           ) : null}
         </>
