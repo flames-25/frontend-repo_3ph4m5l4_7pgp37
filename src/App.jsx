@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import PhoneFrame from './components/PhoneFrame'
-import { Splash, AccessCode, Welcome, ImportSeed, ImportPK, Dashboard, SendSheet, ReceiveSheet, History, Settings, AddAccount, SwapToken, TopUp } from './components/Screens'
+import { Splash, AccessCode, Welcome, ImportSeed, ImportPK, Dashboard, SendSheet, ReceiveSheet, History, Settings, AddAccount, SwapToken, TopUp, NFCTransfer } from './components/Screens'
 import BottomNav from './components/BottomNav'
 import './index.css'
 
@@ -65,11 +65,13 @@ export default function App() {
                 onAddAccount={() => setRoute('add-account')}
                 onSwap={() => setRoute('swap')}
                 onTopUp={() => setRoute('topup')}
+                onNFC={() => setRoute('nfc')}
               />
             )}
             {route === 'add-account' && <AddAccount onClose={() => setRoute('settings')} />}
             {route === 'swap' && <SwapToken onClose={() => setRoute('settings')} />}
             {route === 'topup' && <TopUp onClose={() => setRoute('settings')} />}
+            {route === 'nfc' && <NFCTransfer onClose={() => setRoute('settings')} />}
 
             {showNav && (
               <BottomNav

@@ -327,7 +327,7 @@ export function History({ onBack }) {
   )
 }
 
-export function Settings({ onBack, onAddAccount, onSwap, onTopUp }) {
+export function Settings({ onBack, onAddAccount, onSwap, onTopUp, onNFC }) {
   const [hide, setHide] = useLocalStorage('hide_balances', false)
   return (
     <div className="h-full w-full p-5 pb-24 flex flex-col gap-3">
@@ -337,6 +337,7 @@ export function Settings({ onBack, onAddAccount, onSwap, onTopUp }) {
           <GlassButton onClick={onAddAccount}>Add Account</GlassButton>
           <GlassButton onClick={onSwap}>Swap Token</GlassButton>
           <GlassButton onClick={onTopUp}>Top Up</GlassButton>
+          <GlassButton onClick={onNFC}>NFC Transfer</GlassButton>
         </div>
       </GlassCard>
       <GlassCard className="p-4">
@@ -402,6 +403,103 @@ export function TopUp({ onClose }) {
       <GlassCard className="p-3 text-xs text-white/60">Payment methods coming soon</GlassCard>
       <GlassButton onClick={onClose} disabled={!amt}>Proceed (mock)</GlassButton>
       <GlassButton onClick={onClose}>Cancel</GlassButton>
+    </div>
+  )
+}
+
+export function NFCTransfer({ onClose }) {
+  const [mode, setMode] = useState('send') // 'send' | 'receive'
+  const [amt, setAmt] = useState('')
+  const [addr, setAddr] = useState('')
+  const [status, setStatus] = useState('')
+  const [error, setError] = useState('')
+  const hasNFC = typeof window !== 'undefined' && 'NDEFReader' in window
+
+  async function startSend() {
+    setError(''); setStatus('')
+    if (!amt || !addr) { setError('Fill amount and address'); return }
+    if (!hasNFC) {
+      setStatus('Simulating NFC write...')
+      setTimeout(()=> setStatus('Payment request sent (simulated). Tap supported device to complete.'), 1200)
+      return
+    }
+    try {
+      const ndef = new window.NDEFReader()
+      await ndef.write({ records: [ { recordType:'text', data: JSON.stringify({ type:'cheappay:payment', addr, amt }) } ] })
+      setStatus('Payment request sent via NFC. Ask the receiver to tap to accept.')
+    } catch (e) {
+      setError(e?.message || 'NFC write failed')
+    }
+  }
+
+  async function startListen() {
+    setError(''); setStatus('')
+    if (!hasNFC) {
+      setStatus('Simulating NFC listening...')
+      setTimeout(()=> setStatus('Received mock NFC payload. Ready to proceed.'), 1200)
+      return
+    }
+    try {
+      const ndef = new window.NDEFReader()
+      await ndef.scan()
+      setStatus('Listening... bring a device close to scan.')
+      ndef.onreading = (event) => {
+        try {
+          const rec = event.message.records?.[0]
+          if (rec?.recordType === 'text') {
+            const textDecoder = new TextDecoder()
+            const payload = JSON.parse(textDecoder.decode(rec.data))
+            if (payload?.type === 'cheappay:payment') {
+              setAmt(String(payload.amt || '')); setAddr(payload.addr || '');
+              setStatus('Payment request received. You can confirm in Send screen.')
+            } else {
+              setStatus('Unknown NFC payload received')
+            }
+          } else {
+            setStatus('Unsupported NFC record type')
+          }
+        } catch (err) {
+          setError('Failed to parse NFC data')
+        }
+      }
+    } catch (e) {
+      setError(e?.message || 'NFC scan failed')
+    }
+  }
+
+  return (
+    <div className="p-5 space-y-3 pb-24">
+      <div className="text-white/80">NFC Transfer</div>
+      <GlassCard className="p-3 text-xs text-white/60">
+        Works on supported Android Chrome devices over HTTPS. If NFC is unavailable, actions will be simulated.
+      </GlassCard>
+      <div className="grid grid-cols-2 bg-white/6 border border-white/10 rounded-xl p-1">
+        {['send','receive'].map(m => (
+          <button key={m} onClick={()=>setMode(m)} className={`py-2 rounded-lg text-sm ${mode===m?'bg-white/15 ring-1 ring-inset ring-white/20 text-white':'text-white/60'}`}>{m==='send'?'Send via NFC':'Receive via NFC'}</button>
+        ))}
+      </div>
+
+      {mode==='send' ? (
+        <>
+          <input value={addr} onChange={e=>setAddr(e.target.value)} placeholder="Recipient address" className="w-full bg-white/6 border border-white/15 rounded-xl p-3 text-white/90 outline-none" />
+          <input value={amt} onChange={e=>setAmt(e.target.value)} placeholder="Amount (SOL)" className="w-full bg-white/6 border border-white/15 rounded-xl p-3 text-white/90 outline-none" />
+          <GlassButton onClick={startSend}>Start NFC</GlassButton>
+        </>
+      ) : (
+        <>
+          <GlassButton onClick={startListen}>Listen for NFC</GlassButton>
+          {addr || amt ? (
+            <GlassCard className="p-3 text-xs text-white/70">
+              Incoming request: {amt || '—'} SOL to {addr || '—'}
+            </GlassCard>
+          ) : null}
+        </>
+      )}
+
+      {status && <div className="text-xs text-white/70">{status}</div>}
+      {error && <div className="text-xs text-red-300">{error}</div>}
+
+      <GlassButton onClick={onClose}>Close</GlassButton>
     </div>
   )
 }
