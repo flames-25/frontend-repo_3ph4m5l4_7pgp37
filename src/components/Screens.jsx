@@ -166,42 +166,80 @@ function AssetRow({ logo, name, balance, usd }) {
   )
 }
 
+function TopWalletCard({ wallet }) {
+  return (
+    <div className="relative rounded-2xl overflow-hidden border border-white/10">
+      {/* Background gradients and glow */}
+      <div className="absolute inset-0 bg-[radial-gradient(120%_120%_at_-10%_-10%,rgba(45,212,191,0.22),transparent_50%),radial-gradient(120%_120%_at_110%_10%,rgba(217,70,239,0.22),transparent_55%)]" />
+      <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-white/5 to-white/[0.03] backdrop-blur-xl" />
+
+      <div className="relative p-4">
+        <div className="flex items-center justify-between">
+          <Logo />
+          <div className="flex items-center gap-1.5">
+            <GlassBadge className="text-[10px] px-2 py-0.5">Solana</GlassBadge>
+            <Shield className="size-4 text-teal-300" />
+          </div>
+        </div>
+
+        <div className="mt-3 grid grid-cols-2 gap-3">
+          <div>
+            <div className="text-white/70 text-[10px]">{wallet.name}</div>
+            <div className="mt-0.5 text-xl font-[Goldman] tracking-wider">CHEA •••• •••• •••• 402</div>
+            <div className="mt-2 inline-flex items-center gap-1.5 text-[10px] text-white/70">
+              <span className="px-2 py-0.5 rounded-full bg-white/10 border border-white/15">Main</span>
+              <span className="px-2 py-0.5 rounded-full bg-teal-400/10 border border-teal-400/20 text-teal-200">Priority</span>
+            </div>
+          </div>
+          <div className="flex flex-col items-end justify-center">
+            <div className="text-[10px] text-white/60">Total Balance</div>
+            <div className="text-lg font-[Goldman]">$1,068.40</div>
+          </div>
+        </div>
+
+        <div className="mt-3 grid grid-cols-3 gap-2">
+          <GlassCard className="p-2 text-center bg-white/5">
+            <div className="text-[10px] text-white/60">SOL</div>
+            <div className="text-sm font-[Goldman]">2.84</div>
+          </GlassCard>
+          <GlassCard className="p-2 text-center bg-white/5">
+            <div className="text-[10px] text-white/60">USDC</div>
+            <div className="text-sm font-[Goldman]">128.2</div>
+          </GlassCard>
+          <GlassCard className="p-2 text-center bg-white/5">
+            <div className="text-[10px] text-white/60">CHEAP</div>
+            <div className="text-sm font-[Goldman]">42,000</div>
+          </GlassCard>
+        </div>
+
+        <div className="mt-3 flex items-center justify-between text-[11px]">
+          <div className="flex items-center gap-1.5">
+            <div className="px-2 py-1 rounded-lg bg-white/8 border border-white/15 font-[Goldman]">CHE4...AP</div>
+            <button className="px-2 py-1 rounded-lg bg-white/8 border border-white/15 text-white/70 active:scale-95">
+              <Copy className="size-3" />
+            </button>
+          </div>
+          <a href="https://solscan.io/" target="_blank" rel="noreferrer" className="flex items-center gap-1 text-teal-300/90">
+            <span>SOLSCAN</span>
+            <ExternalLink className="size-3" />
+          </a>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export function Dashboard({ wallet, onSend, onReceive, onOpenHistory, onOpenSettings }) {
   return (
-    <div className="h-full w-full p-5 flex flex-col gap-4">
-      <div className="relative">
-        <GlassCard className="p-5">
-          <div className="flex items-center justify-between">
-            <Logo />
-            <div className="text-xs text-white/60">Solana</div>
-          </div>
-          <div className="mt-6 flex items-center justify-between">
-            <div>
-              <div className="text-white/70 text-xs">{wallet.name}</div>
-              <div className="text-2xl font-[Goldman]">CHEA •••• •••• •••• 402</div>
-            </div>
-            <Shield className="size-6 text-teal-300" />
-          </div>
-          <div className="mt-6 grid grid-cols-3 gap-3">
-            <GlassCard className="p-3 text-center"><div className="text-xs text-white/60">SOL</div><div className="font-[Goldman]">2.84</div></GlassCard>
-            <GlassCard className="p-3 text-center"><div className="text-xs text-white/60">USDC</div><div className="font-[Goldman]">128.2</div></GlassCard>
-            <GlassCard className="p-3 text-center"><div className="text-xs text-white/60">CHEAP</div><div className="font-[Goldman]">42,000</div></GlassCard>
-          </div>
-          <div className="mt-3 text-right text-xs text-teal-300/90 flex items-center justify-end gap-1">
-            <a href="https://solscan.io/" target="_blank" rel="noreferrer" className="flex items-center gap-1">
-              <span>SOLSCAN</span>
-              <ExternalLink className="size-3" />
-            </a>
-          </div>
-        </GlassCard>
-      </div>
+    <div className="h-full w-full p-5 flex flex-col gap-3">
+      <TopWalletCard wallet={wallet} />
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-2.5">
         <GlassButton onClick={onSend}><Send className="inline mr-2" size={16}/>Send</GlassButton>
         <GlassButton onClick={onReceive}><QrCode className="inline mr-2" size={16}/>Receive</GlassButton>
       </div>
 
-      <div className="mt-2">
+      <div className="mt-1.5">
         <div className="text-white/70 mb-2">My Assets</div>
         <div className="space-y-2">
           <AssetRow name="Solana" balance="2.84" usd="$520" />
