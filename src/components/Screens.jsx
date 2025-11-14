@@ -233,7 +233,7 @@ function TopWalletCard({ wallet }) {
 
 export function Dashboard({ wallet, onSend, onReceive, onOpenHistory, onOpenSettings }) {
   return (
-    <div className="h-full w-full p-5 flex flex-col gap-3">
+    <div className="h-full w-full p-5 pb-20 flex flex-col gap-3">
       <TopWalletCard wallet={wallet} />
 
       <div className="grid grid-cols-2 gap-2.5">
@@ -263,7 +263,7 @@ export function SendSheet({ onClose }) {
   const [amt, setAmt] = useState('')
   const fee = useMemo(()=> amt ? Math.max(0.00001, Number(amt)*0.0005).toFixed(5) : '0.00000', [amt])
   return (
-    <div className="p-5 space-y-3">
+    <div className="p-5 space-y-3 pb-24">
       <div className="text-white/80">Send</div>
       <input value={to} onChange={e=>setTo(e.target.value)} placeholder="Recipient address" className="w-full bg-white/6 border border-white/15 rounded-xl p-3 text-white/90 outline-none" />
       <input value={amt} onChange={e=>setAmt(e.target.value)} placeholder="Amount (SOL)" className="w-full bg-white/6 border border-white/15 rounded-xl p-3 text-white/90 outline-none" />
@@ -278,7 +278,7 @@ export function SendSheet({ onClose }) {
 
 export function ReceiveSheet({ onClose }) {
   return (
-    <div className="p-5 space-y-3">
+    <div className="p-5 space-y-3 pb-24">
       <div className="text-white/80">Receive</div>
       <div className="aspect-square rounded-xl bg-white/6 border border-white/10" />
       <div className="flex items-center justify-between bg-white/6 border border-white/15 rounded-xl p-3">
@@ -300,7 +300,7 @@ export function History({ onBack }) {
   ]
   const filtered = rows.filter(r => tab==='All' || (tab==='Received' ? r.dir==='in' : r.dir==='out'))
   return (
-    <div className="h-full w-full p-5 flex flex-col gap-4">
+    <div className="h-full w-full p-5 pb-24 flex flex-col gap-4">
       <div className="grid grid-cols-3 bg-white/6 border border-white/10 rounded-xl p-1">
         {tabs.map(t => (
           <button key={t} onClick={()=>setTab(t)} className={`py-2 rounded-lg text-sm ${tab===t?'bg-white/15 ring-1 ring-inset ring-white/20 text-white':'text-white/60'}`}>{t}</button>
@@ -327,10 +327,18 @@ export function History({ onBack }) {
   )
 }
 
-export function Settings({ onBack }) {
+export function Settings({ onBack, onAddAccount, onSwap, onTopUp }) {
   const [hide, setHide] = useLocalStorage('hide_balances', false)
   return (
-    <div className="h-full w-full p-5 flex flex-col gap-3">
+    <div className="h-full w-full p-5 pb-24 flex flex-col gap-3">
+      <GlassCard className="p-4">
+        <div className="text-white/80 mb-2">Accounts</div>
+        <div className="grid gap-2">
+          <GlassButton onClick={onAddAccount}>Add Account</GlassButton>
+          <GlassButton onClick={onSwap}>Swap Token</GlassButton>
+          <GlassButton onClick={onTopUp}>Top Up</GlassButton>
+        </div>
+      </GlassCard>
       <GlassCard className="p-4">
         <div className="text-white/80 mb-2">Security</div>
         <div className="grid gap-2">
@@ -345,6 +353,55 @@ export function Settings({ onBack }) {
       <div className="mt-auto">
         <GlassButton onClick={onBack}>Back</GlassButton>
       </div>
+    </div>
+  )
+}
+
+export function AddAccount({ onClose }) {
+  const [name, setName] = useState('')
+  return (
+    <div className="p-5 space-y-3 pb-24">
+      <div className="text-white/80">Add Account</div>
+      <input value={name} onChange={e=>setName(e.target.value)} placeholder="Account name" className="w-full bg-white/6 border border-white/15 rounded-xl p-3 text-white/90 outline-none" />
+      <GlassButton onClick={onClose} disabled={!name.trim()}>Create (mock)</GlassButton>
+      <GlassButton onClick={onClose}>Cancel</GlassButton>
+    </div>
+  )
+}
+
+export function SwapToken({ onClose }) {
+  const [from, setFrom] = useState('SOL')
+  const [to, setTo] = useState('USDC')
+  const [amt, setAmt] = useState('')
+  return (
+    <div className="p-5 space-y-3 pb-24">
+      <div className="text-white/80">Swap Token</div>
+      <select value={from} onChange={e=>setFrom(e.target.value)} className="w-full bg-white/6 border border-white/15 rounded-xl p-3 text-white/90 outline-none">
+        <option>SOL</option>
+        <option>USDC</option>
+        <option>CHEAP</option>
+      </select>
+      <select value={to} onChange={e=>setTo(e.target.value)} className="w-full bg-white/6 border border-white/15 rounded-xl p-3 text-white/90 outline-none">
+        <option>USDC</option>
+        <option>SOL</option>
+        <option>CHEAP</option>
+      </select>
+      <input value={amt} onChange={e=>setAmt(e.target.value)} placeholder="Amount" className="w-full bg-white/6 border border-white/15 rounded-xl p-3 text-white/90 outline-none" />
+      <GlassButton onClick={onClose} disabled={!amt}>Swap (mock)</GlassButton>
+      <GlassButton onClick={onClose}>Cancel</GlassButton>
+    </div>
+  )
+}
+
+export function TopUp({ onClose }) {
+  const [amt, setAmt] = useState('')
+  return (
+    <div className="p-5 space-y-3 pb-24">
+      <div className="text-white/80">Top Up</div>
+      <input value={amt} onChange={e=>setAmt(e.target.value)} placeholder="Amount (USDC)" className="w-full bg-white/6 border border-white/15 rounded-xl p-3 text-white/90 outline-none" />
+      <GlassCard className="p-3 text-xs text-white/60">Payment methods coming soon</GlassCard>
+      <GlassButton onClick={onClose} disabled={!amt}>Proceed (mock)</GlassButton>
+      <GlassButton onClick={onClose}>Cancel</GlassButton>
     </div>
   )
 }

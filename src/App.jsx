@@ -1,7 +1,7 @@
-import React, { useEffect, useMemo, useState } from 'react'
-import Spline from '@splinetool/react-spline'
+import React, { useEffect, useState } from 'react'
 import PhoneFrame from './components/PhoneFrame'
-import { Splash, AccessCode, Welcome, ImportSeed, ImportPK, Dashboard, SendSheet, ReceiveSheet, History, Settings } from './components/Screens'
+import { Splash, AccessCode, Welcome, ImportSeed, ImportPK, Dashboard, SendSheet, ReceiveSheet, History, Settings, AddAccount, SwapToken, TopUp } from './components/Screens'
+import BottomNav from './components/BottomNav'
 import './index.css'
 
 function useIsMobileOnly() {
@@ -27,8 +27,9 @@ export default function App() {
   }, [route])
 
   function onUnlocked() { setRoute('welcome') }
-
   function onImported(w) { setWallet(w); setRoute('dashboard') }
+
+  const showNav = ['dashboard','history','settings','send','receive'].includes(route)
 
   return (
     <div className="min-h-screen w-full text-white" style={{background:'linear-gradient(180deg,#050608,#101319)'}}>
@@ -58,7 +59,30 @@ export default function App() {
             {route === 'send' && <SendSheet onClose={() => setRoute('dashboard')} />}
             {route === 'receive' && <ReceiveSheet onClose={() => setRoute('dashboard')} />}
             {route === 'history' && <History onBack={() => setRoute('dashboard')} />}
-            {route === 'settings' && <Settings onBack={() => setRoute('dashboard')} />}
+            {route === 'settings' && (
+              <Settings
+                onBack={() => setRoute('dashboard')}
+                onAddAccount={() => setRoute('add-account')}
+                onSwap={() => setRoute('swap')}
+                onTopUp={() => setRoute('topup')}
+              />
+            )}
+            {route === 'add-account' && <AddAccount onClose={() => setRoute('settings')} />}
+            {route === 'swap' && <SwapToken onClose={() => setRoute('settings')} />}
+            {route === 'topup' && <TopUp onClose={() => setRoute('settings')} />}
+
+            {showNav && (
+              <BottomNav
+                current={route}
+                onNavigate={(key) => {
+                  if (key === 'send') return setRoute('send')
+                  if (key === 'receive') return setRoute('receive')
+                  if (key === 'history') return setRoute('history')
+                  if (key === 'settings') return setRoute('settings')
+                  setRoute('dashboard')
+                }}
+              />
+            )}
           </PhoneFrame>
         </div>
       )}
