@@ -407,7 +407,7 @@ export function TopUp({ onClose }) {
   )
 }
 
-function NFCWaves({ label = 'Mencari perangkat terdekat...' }) {
+function NFCWaves({ label = 'Searching for nearby devices...' }) {
   return (
     <div className="relative mx-auto mt-2 mb-1 h-40 w-40">
       <div className="absolute inset-0 rounded-full border border-white/15" />
@@ -433,18 +433,18 @@ export function NFCTransfer({ onClose }) {
 
   async function startSend() {
     setError(''); setStatus('');
-    if (!amt || !addr) { setError('Isi nominal dan alamat terlebih dulu'); return }
+    if (!amt || !addr) { setError('Please fill amount and address first'); return }
     setScanning(true)
     if (!hasNFC) {
-      setStatus('Mencari perangkat terdekat (simulasi)...')
-      setTimeout(()=> setStatus('Tempelkan perangkat penerima untuk mengirim...'), 1000)
-      setTimeout(()=> { setStatus('Permintaan pembayaran terkirim (simulasi)'); setScanning(false) }, 2200)
+      setStatus('Searching for nearby device (simulated)...')
+      setTimeout(()=> setStatus('Bring the receiver close to send...'), 1000)
+      setTimeout(()=> { setStatus('Payment request sent (simulated)'); setScanning(false) }, 2200)
       return
     }
     try {
       const ndef = new window.NDEFReader()
       await ndef.write({ records: [ { recordType:'text', data: JSON.stringify({ type:'cheappay:payment', addr, amt }) } ] })
-      setStatus('Permintaan pembayaran terkirim via NFC. Minta penerima untuk tap.')
+      setStatus('Payment request sent via NFC. Ask the receiver to tap.')
     } catch (e) {
       setError(e?.message || 'NFC write failed')
     } finally {
@@ -456,9 +456,9 @@ export function NFCTransfer({ onClose }) {
     setError(''); setStatus('');
     setScanning(true)
     if (!hasNFC) {
-      setStatus('Mendengarkan NFC (simulasi)...')
+      setStatus('Listening for NFC (simulated)...')
       setTimeout(()=> {
-        setStatus('Payload NFC contoh diterima. Siap diproses.')
+        setStatus('Sample NFC payload received. Ready to proceed.')
         setAmt('0.25'); setAddr('8x9...jk2'); setScanning(false)
       }, 1600)
       return
@@ -466,7 +466,7 @@ export function NFCTransfer({ onClose }) {
     try {
       const ndef = new window.NDEFReader()
       await ndef.scan()
-      setStatus('Mendengarkan... dekatkan perangkat untuk tap.')
+      setStatus('Listening... bring a device close to tap.')
       ndef.onreading = (event) => {
         try {
           const rec = event.message.records?.[0]
@@ -475,16 +475,16 @@ export function NFCTransfer({ onClose }) {
             const payload = JSON.parse(textDecoder.decode(rec.data))
             if (payload?.type === 'cheappay:payment') {
               setAmt(String(payload.amt || '')); setAddr(payload.addr || '');
-              setStatus('Permintaan pembayaran diterima. Anda bisa konfirmasi di layar Send.')
+              setStatus('Payment request received. You can confirm in Send screen.')
               setScanning(false)
             } else {
-              setStatus('Payload NFC tidak dikenal')
+              setStatus('Unknown NFC payload')
             }
           } else {
-            setStatus('Tipe record NFC tidak didukung')
+            setStatus('Unsupported NFC record type')
           }
         } catch (err) {
-          setError('Gagal membaca data NFC')
+          setError('Failed to read NFC data')
           setScanning(false)
         }
       }
@@ -498,18 +498,18 @@ export function NFCTransfer({ onClose }) {
     <div className="p-5 space-y-3 pb-24">
       <div className="text-white/80">NFC Transfer</div>
       <GlassCard className="p-3 text-xs text-white/60">
-        Berjalan di perangkat Android Chrome yang mendukung melalui HTTPS. Jika NFC tidak tersedia, proses akan disimulasikan.
+        Works on supported Android Chrome devices over HTTPS. If NFC is unavailable, actions will be simulated.
       </GlassCard>
       <div className="grid grid-cols-2 bg-white/6 border border-white/10 rounded-xl p-1">
         {['send','receive'].map(m => (
-          <button key={m} onClick={()=>setMode(m)} className={`py-2 rounded-lg text-sm ${mode===m?'bg-white/15 ring-1 ring-inset ring-white/20 text-white':'text-white/60'}`}>{m==='send'?'Kirim via NFC':'Terima via NFC'}</button>
+          <button key={m} onClick={()=>setMode(m)} className={`py-2 rounded-lg text-sm ${mode===m?'bg-white/15 ring-1 ring-inset ring-white/20 text-white':'text-white/60'}`}>{m==='send'?'Send via NFC':'Receive via NFC'}</button>
         ))}
       </div>
 
       {scanning && (
         <GlassCard className="p-6 flex flex-col items-center">
-          <NFCWaves label={mode==='send' ? 'Mencari perangkat untuk mengirim...' : 'Mencari perangkat di sekitar...'} />
-          <div className="mt-10 text-[11px] text-white/60">Pastikan NFC aktif dan perangkat dalam jarak dekat</div>
+          <NFCWaves label={mode==='send' ? 'Searching for a device to send...' : 'Searching nearby devices...'} />
+          <div className="mt-10 text-[11px] text-white/60">Ensure NFC is on and devices are close</div>
         </GlassCard>
       )}
 
@@ -517,14 +517,14 @@ export function NFCTransfer({ onClose }) {
         <>
           <input value={addr} onChange={e=>setAddr(e.target.value)} placeholder="Recipient address" className="w-full bg-white/6 border border-white/15 rounded-xl p-3 text-white/90 outline-none" />
           <input value={amt} onChange={e=>setAmt(e.target.value)} placeholder="Amount (SOL)" className="w-full bg-white/6 border border-white/15 rounded-xl p-3 text-white/90 outline-none" />
-          <GlassButton onClick={startSend} disabled={scanning}>{scanning ? 'Menunggu...' : 'Mulai NFC'}</GlassButton>
+          <GlassButton onClick={startSend} disabled={scanning}>{scanning ? 'Waiting...' : 'Start NFC'}</GlassButton>
         </>
       ) : (
         <>
-          <GlassButton onClick={startListen} disabled={scanning}>{scanning ? 'Mendengarkan...' : 'Dengarkan NFC'}</GlassButton>
+          <GlassButton onClick={startListen} disabled={scanning}>{scanning ? 'Listening...' : 'Listen for NFC'}</GlassButton>
           {(addr || amt) && !scanning ? (
             <GlassCard className="p-3 text-xs text-white/70">
-              Permintaan masuk: {amt || '—'} SOL ke {addr || '—'}
+              Incoming request: {amt || '—'} SOL to {addr || '—'}
             </GlassCard>
           ) : null}
         </>
